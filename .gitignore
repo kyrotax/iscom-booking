@@ -1,0 +1,93 @@
+# ==============================================================================
+# Laravel & ISCOM Mentoring Booking System - Git Ignore Rules
+# ==============================================================================
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Compiled Assets & Public Storage Link
+/public/build
+/public/hot
+/public/storage
+
+# Environment & Credentials (CRITICAL)
+.env
+.env.backup
+.env.production
+.env.local
+.env.testing
+.env.*
+!.env.example
+/auth.json
+
+# Storage & Dynamic App Data
+/storage/*.key
+/storage/pail
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+
+# Framework Cache & Compiled Views
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/cache/data/
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+
+# Application Logs
+/storage/logs/*
+!/storage/logs/.gitignore
+*.log
+
+# Bootstrap Cache (Autoload / Services / Packages)
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+# Databases (Local SQLite files)
+/database/*.sqlite
+/database/*.sqlite-journal
+/database/*.sqlite-shm
+/database/*.sqlite-wal
+
+# Vercel Deployment Cache
+.vercel/
+
+# Testing Cache
+.phpunit.result.cache
+/.phpunit.cache
+.phpactor.json
+
+# IDEs and Text Editors
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+*.swp
+*.swo
+*~
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Local Dev Tooling
+Homestead.json
+Homestead.yaml
