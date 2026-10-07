@@ -21,6 +21,7 @@
       <table class="iscom-table">
         <thead>
           <tr>
+            <th>Sesi</th>
             <th>Hari & Tanggal</th>
             <th>Waktu Sesi</th>
             <th>Mentor</th>
@@ -33,6 +34,11 @@
         <tbody>
           @forelse($schedules as $sched)
             <tr>
+              <td>
+                <span style="font-weight: 600; color: var(--primary);">
+                  {{ $sched->mentoringSession->title ?? '-' }}
+                </span>
+              </td>
               <td>
                 <span style="font-weight: 600;">{{ $sched->day_name }}</span>
                 <span style="display: block; font-size: 12px; color: var(--on-surface-variant);">
@@ -62,6 +68,10 @@
               </td>
               <td style="text-align: right;">
                 <div style="display: inline-flex; gap: 6px;">
+                  <a href="{{ route('admin.schedules.show', $sched->id) }}" class="btn btn-blue btn-sm" title="Lihat Peserta di Jadwal Ini">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">group</span>
+                    <span>Peserta ({{ $sched->accepted_count + $sched->pending_count }})</span>
+                  </a>
                   <a href="{{ route('admin.schedules.edit', $sched->id) }}" class="btn btn-outline btn-sm" title="Edit Jadwal">
                     <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
                   </a>

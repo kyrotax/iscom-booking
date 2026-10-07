@@ -68,4 +68,37 @@ class User extends Authenticatable
     {
         return $this->hasOne(Booking::class)->latestOfMany();
     }
+
+    public function activeBookings(): HasMany
+    {
+        return $this->hasMany(Booking::class)->whereIn('status', ['pending', 'accepted']);
+    }
+
+    public function hasBookingForSession(int $sessionId): bool
+    {
+        return $this->activeBookings()
+            ->whereHas('schedule', function ($query) use ($sessionId) {
+                $query->where('mentoring_session_id', $sessionId);
+            })
+            ->exists();
+    }
+
+    public function findConflictingSchedule(Schedule $schedule): ?Schedule
+    {
+        $activeBookings = $this->activeBookings()
+            ->with('schedule.mentoringSession')
+            ->get();
+
+        foreach ($activeBookings as $booking) {
+            $existing = $booking->schedule;
+            if (!$existing || $existing->id === $schedule->id) {
+                continue;
+            }
+            if ($schedule->conflictsWith($existing)) {
+                return $existing;
+            }
+        }
+
+        return null;
+    }
 }

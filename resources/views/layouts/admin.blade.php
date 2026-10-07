@@ -30,8 +30,9 @@
 
         <nav class="nav-links">
           <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a>
+          <a href="{{ route('admin.sessions.index') }}" class="nav-link {{ request()->is('admin/sessions*') ? 'active' : '' }}">Kelola Sesi</a>
           <a href="{{ route('admin.schedules.index') }}" class="nav-link {{ request()->is('admin/schedules*') ? 'active' : '' }}">Kelola Jadwal</a>
-          <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->is('admin/bookings*') ? 'active' : '' }}">Approval Booking</a>
+          <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->is('admin/bookings*') ? 'active' : '' }}">Data Peserta</a>
         </nav>
       </div>
 
@@ -63,8 +64,9 @@
     <!-- Mobile Nav Drawer -->
     <div id="mobileNav" class="mobile-nav">
       <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a>
+      <a href="{{ route('admin.sessions.index') }}" class="nav-link {{ request()->is('admin/sessions*') ? 'active' : '' }}">Kelola Sesi</a>
       <a href="{{ route('admin.schedules.index') }}" class="nav-link {{ request()->is('admin/schedules*') ? 'active' : '' }}">Kelola Jadwal</a>
-      <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->is('admin/bookings*') ? 'active' : '' }}">Approval Booking</a>
+      <a href="{{ route('admin.bookings.index') }}" class="nav-link {{ request()->is('admin/bookings*') ? 'active' : '' }}">Data Peserta</a>
       <a href="{{ route('home') }}" class="nav-link">Lihat Website Mahasiswa</a>
     </div>
   </header>

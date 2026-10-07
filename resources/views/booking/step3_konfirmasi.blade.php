@@ -78,6 +78,16 @@
     <div class="summary-block">
       <h2 class="summary-heading">Jadwal & Detail Sesi</h2>
       <div class="summary-box">
+        @if($schedule->mentoringSession)
+          <div style="grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border);">
+            <span class="material-symbols-outlined" style="color: var(--primary); font-size: 20px; margin-top: 2px;">category</span>
+            <div>
+              <span class="summary-item-label">Sesi Mentoring</span>
+              <span class="summary-item-val" style="font-weight: 700; color: var(--primary);">{{ $schedule->mentoringSession->title }}</span>
+            </div>
+          </div>
+        @endif
+
         <div style="display: flex; align-items: flex-start; gap: 8px;">
           <span class="material-symbols-outlined" style="color: var(--primary); font-size: 20px; margin-top: 2px;">calendar_today</span>
           <div>

@@ -3,10 +3,6 @@
 @section('content')
 <div class="container" style="padding-top: 24px; padding-bottom: 64px;">
   <div style="margin-bottom: 32px;">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-      <span class="dot-blue" style="width: 10px; height: 10px;"></span>
-      <span class="font-label-sm" style="color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">JADWAL RESMI ISCOM</span>
-    </div>
     <h1 class="font-headline-xl">Jadwal Mentoring Mahasiswa</h1>
     <p class="font-body-md" style="color: var(--on-surface-variant); max-width: 600px; margin-top: 4px;">
       Lihat seluruh jadwal sesi pendampingan lab yang terbuka minggu ini. Pilih sesi yang cocok dan booking sebelum kuota habis.

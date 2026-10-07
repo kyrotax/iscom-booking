@@ -62,7 +62,9 @@
     <!-- Ticket Summary Box -->
     <div class="ticket-badge-box">
       <div class="ticket-header">
-        <span style="color: var(--on-surface-variant); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Ringkasan Sesi</span>
+        <span style="color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">
+          {{ $booking->schedule->mentoringSession->title ?? 'Ringkasan Sesi' }}
+        </span>
         <span class="ticket-code">{{ $booking->booking_code }}</span>
       </div>
 

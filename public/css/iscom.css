@@ -724,6 +724,19 @@ img, svg {
   background-color: var(--outline);
 }
 
+.slot-badge-red {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #dc2626;
+}
+
+.slot-badge-red .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: #ef4444;
+}
+
 .schedule-meta-list {
   display: flex;
   flex-direction: column;
@@ -1146,22 +1159,13 @@ img, svg {
 }
 
 .status-card-rejected {
-  background-color: rgba(240, 243, 255, 0.7);
+  background-color: var(--surface-white);
   border: 1px solid var(--border);
+  border-left: 6px solid #ef4444;
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
   margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@media (min-width: 640px) {
-  .status-card-rejected {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
 }
 
 .status-header {

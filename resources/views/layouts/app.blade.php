@@ -41,7 +41,7 @@
         <!-- Desktop Navigation Links -->
         <nav class="nav-links">
           <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
-          <a href="{{ route('jadwal') }}" class="nav-link {{ request()->routeIs('jadwal') ? 'active' : '' }}">Jadwal</a>
+          <a href="{{ route('sesi') }}" class="nav-link {{ request()->routeIs('sesi*') ? 'active' : '' }}">Sesi</a>
           <a href="{{ route('booking.step1') }}" class="nav-link {{ request()->is('booking*') ? 'active' : '' }}">Booking</a>
           <a href="{{ route('status') }}" class="nav-link {{ request()->routeIs('status') ? 'active' : '' }}">Status</a>
           @if(Auth::check() && Auth::user()->isAdmin())
@@ -82,7 +82,7 @@
     <!-- Mobile Navigation Drawer -->
     <div id="mobileNav" class="mobile-nav">
       <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
-      <a href="{{ route('jadwal') }}" class="nav-link {{ request()->routeIs('jadwal') ? 'active' : '' }}">Jadwal</a>
+      <a href="{{ route('sesi') }}" class="nav-link {{ request()->routeIs('sesi*') ? 'active' : '' }}">Sesi Mentoring</a>
       <a href="{{ route('booking.step1') }}" class="nav-link {{ request()->is('booking*') ? 'active' : '' }}">Booking Mentoring</a>
       <a href="{{ route('status') }}" class="nav-link {{ request()->routeIs('status') ? 'active' : '' }}">Status Booking</a>
       @if(Auth::check() && Auth::user()->isAdmin())

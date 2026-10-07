@@ -20,56 +20,56 @@
       <a href="{{ route('booking.step1') }}" class="btn btn-hero-primary">
         Booking Mentoring
       </a>
-      <a href="#jadwal-terdekat" class="btn btn-hero-secondary">
-        <span>Lihat Jadwal</span>
+      <a href="#sesi-terdekat" class="btn btn-hero-secondary">
+        <span>Lihat Sesi</span>
         <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
       </a>
     </div>
   </div>
 
   <!-- Scroll Down Indicator Cue -->
-  <a href="#jadwal-terdekat" class="hero-scroll-cue" aria-label="Gulir ke jadwal mentoring di bawah">
-    <span class="scroll-label">Lihat Jadwal</span>
+  <a href="#sesi-terdekat" class="hero-scroll-cue" aria-label="Gulir ke sesi mentoring di bawah">
+    <span class="scroll-label">Lihat Sesi</span>
     <span class="material-symbols-outlined">expand_more</span>
   </a>
 </section>
 
-<!-- Section: Jadwal yang tersedia (Di bawah satu layar penuh, scroll ke bawah) -->
+<!-- Section: Sesi yang tersedia (Di bawah satu layar penuh, scroll ke bawah) -->
 <div class="container">
-  <section id="jadwal-terdekat" class="jadwal-section-home">
+  <section id="sesi-terdekat" class="jadwal-section-home">
     <div class="section-header">
       <div>
-        <h2 class="section-title">Jadwal yang tersedia</h2>
-        <p class="section-subtitle">Sesi bimbingan aktif minggu ini bersama mentor ISCOM</p>
+        <h2 class="section-title">Sesi yang tersedia</h2>
+        <p class="section-subtitle">Pilih topik sesi bimbingan aktif ISCOM untuk melihat berbagai jadwal tatap muka</p>
       </div>
-      <a href="{{ route('jadwal') }}" class="section-link">
-        <span>Lihat semua jadwal</span>
+      <a href="{{ route('sesi') }}" class="section-link">
+        <span>Lihat semua sesi</span>
         <span>→</span>
       </a>
     </div>
 
-    <!-- 3 Schedule Cards Grid -->
+    <!-- Mentoring Sessions Grid -->
     <div class="schedule-grid">
-      @forelse($upcomingSchedules as $sched)
+      @forelse($activeSessions as $session)
         <div class="schedule-card">
           <div>
             <div class="schedule-card-header">
               <div>
-                <p class="schedule-badge-type">Sesi Terbuka</p>
-                <h3 class="schedule-date-title">
-                  {{ $sched->day_name }}, {{ \Carbon\Carbon::parse($sched->schedule_date)->format('d M Y') }}
+                <p class="schedule-badge-type">{{ $session->badge_label }}</p>
+                <h3 class="schedule-date-title" style="font-size: 20px;">
+                  {{ $session->title }}
                 </h3>
               </div>
 
-              @if($sched->remaining_slots > 3)
+              @if($session->total_remaining_slots > 5)
                 <div class="slot-badge slot-badge-green">
                   <span class="dot"></span>
-                  <span>Sisa {{ $sched->remaining_slots }} slot</span>
+                  <span>Sisa {{ $session->total_remaining_slots }} slot</span>
                 </div>
-              @elseif($sched->remaining_slots > 0)
+              @elseif($session->total_remaining_slots > 0)
                 <div class="slot-badge slot-badge-orange">
                   <span class="dot"></span>
-                  <span>Sisa {{ $sched->remaining_slots }} slot</span>
+                  <span>Sisa {{ $session->total_remaining_slots }} slot</span>
                 </div>
               @else
                 <div class="slot-badge slot-badge-gray">
@@ -79,41 +79,36 @@
               @endif
             </div>
 
+            <p class="font-body-sm" style="color: var(--on-surface-variant); margin-bottom: 16px; line-height: 1.5;">
+              {{ $session->description }}
+            </p>
+
             <div class="schedule-meta-list">
               <div class="schedule-meta-item">
-                <span class="material-symbols-outlined">schedule</span>
-                <span class="value-highlight">{{ $sched->time_slot }}</span>
+                <span class="material-symbols-outlined">event_available</span>
+                <span class="value-highlight">{{ $session->schedules->count() }} Pilihan Jadwal Tersedia</span>
               </div>
               <div class="schedule-meta-item">
                 <span class="material-symbols-outlined">person</span>
-                <span class="value-highlight">{{ $sched->mentor_names }}</span>
-              </div>
-              <div class="schedule-meta-item">
-                <span class="material-symbols-outlined">location_on</span>
-                <span>{{ $sched->location }}</span>
-              </div>
-              <div class="schedule-meta-item">
-                <span class="material-symbols-outlined">school</span>
-                <span>Topik: {{ $sched->topic }}</span>
+                <span>{{ $session->mentors_summary ?: 'Mentor ISCOM' }}</span>
               </div>
             </div>
           </div>
 
-          <div style="margin-top: 16px;">
-            @if($sched->remaining_slots > 0)
-              <a href="{{ route('booking.step1') }}" class="btn btn-outline btn-full" style="background-color: var(--surface-low); color: var(--primary);">
-                Pilih Jadwal
-              </a>
-            @else
-              <button class="btn btn-ghost btn-full" disabled style="opacity: 0.6; cursor: not-allowed;">
-                Kuota Penuh
+          <div style="margin-top: 20px;">
+            <form action="{{ route('sesi.pilih') }}" method="POST">
+              @csrf
+              <input type="hidden" name="session_id" value="{{ $session->slug ?? $session->id }}">
+              <button type="submit" class="btn btn-outline btn-full" style="background-color: var(--surface-low); color: var(--primary); font-weight: 600;">
+                <span>Buka Sesi &amp; Pilih Jadwal</span>
+                <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
               </button>
-            @endif
+            </form>
           </div>
         </div>
       @empty
         <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 48px 24px;">
-          <p class="font-body-md" style="color: var(--on-surface-variant);">Belum ada jadwal mentoring aktif saat ini.</p>
+          <p class="font-body-md" style="color: var(--on-surface-variant);">Belum ada sesi mentoring aktif saat ini.</p>
         </div>
       @endforelse
     </div>

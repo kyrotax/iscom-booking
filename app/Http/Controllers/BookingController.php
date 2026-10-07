@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\MentoringSession;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,19 +11,69 @@ use Illuminate\Support\Facades\Auth;
 class BookingController extends Controller
 {
     /**
+     * Memulai Alur Booking menggunakan POST sehingga ID jadwal tidak terlihat di URL
+     */
+    public function mulaiBooking(Request $request)
+    {
+        $validated = $request->validate([
+            'schedule_id' => 'required|exists:schedules,id',
+        ]);
+
+        $user = Auth::user();
+        $preselected = Schedule::with('mentoringSession')->findOrFail($validated['schedule_id']);
+
+        // Check Rule 1: 1 jadwal per sesi
+        if ($user && $user->hasBookingForSession($preselected->mentoring_session_id)) {
+            $sessionTarget = $preselected->mentoringSession->slug ?? $preselected->mentoring_session_id;
+            return redirect()->route('sesi.show', $sessionTarget)
+                ->with('error', 'Kamu sudah terdaftar pada ' . $preselected->mentoringSession->title . '. Setiap mahasiswa hanya boleh memilih 1 jadwal per sesi.');
+        }
+
+        // Check Rule 2: Bentrok jam dan tanggal
+        if ($user) {
+            $conflict = $user->findConflictingSchedule($preselected);
+            if ($conflict) {
+                $sessionTarget = $preselected->mentoringSession->slug ?? $preselected->mentoring_session_id;
+                $conflictSessionTitle = $conflict->mentoringSession->title ?? 'Sesi Lain';
+                $conflictDate = \Carbon\Carbon::parse($conflict->schedule_date)->format('d M Y');
+                return redirect()->route('sesi.show', $sessionTarget)
+                    ->with('error', "Jadwal ini bentrok dengan {$conflictSessionTitle} yang sudah kamu booking pada tanggal {$conflictDate} ({$conflict->time_slot}).");
+            }
+        }
+
+        session(['booking_schedule_id' => $preselected->id]);
+
+        return redirect()->route('booking.step1');
+    }
+
+    /**
      * Step 1: Form Data Diri Mahasiswa
      */
-    public function step1()
+    public function step1(Request $request)
     {
         $user = Auth::user();
 
-        // Check if user already has an active pending or accepted booking
-        $existingBooking = Booking::where('user_id', $user->id)
-            ->whereIn('status', ['pending', 'accepted'])
-            ->first();
+        // Optional pre-selected schedule from Sesi detail page
+        if ($request->has('schedule_id')) {
+            $preselected = Schedule::with('mentoringSession')->find($request->schedule_id);
+            if ($preselected) {
+                // Check Rule 1: 1 jadwal per sesi
+                if ($user->hasBookingForSession($preselected->mentoring_session_id)) {
+                    return redirect()->route('sesi.show', $preselected->mentoring_session_id)
+                        ->with('error', 'Kamu sudah terdaftar pada ' . $preselected->mentoringSession->title . '. Setiap mahasiswa hanya boleh memilih 1 jadwal per sesi.');
+                }
 
-        if ($existingBooking) {
-            return redirect()->route('status')->with('info', 'Anda sudah memiliki pendaftaran mentoring aktif dengan kode ' . $existingBooking->booking_code . '.');
+                // Check Rule 2: Bentrok jam dan tanggal
+                $conflict = $user->findConflictingSchedule($preselected);
+                if ($conflict) {
+                    $conflictSessionTitle = $conflict->mentoringSession->title ?? 'Sesi Lain';
+                    $conflictDate = \Carbon\Carbon::parse($conflict->schedule_date)->format('d M Y');
+                    return redirect()->route('sesi.show', $preselected->mentoring_session_id)
+                        ->with('error', "Jadwal ini bentrok dengan {$conflictSessionTitle} yang sudah kamu booking pada tanggal {$conflictDate} ({$conflict->time_slot}).");
+                }
+
+                session(['booking_schedule_id' => $preselected->id]);
+            }
         }
 
         $sessionData = session('booking_step1', [
@@ -57,25 +108,48 @@ class BookingController extends Controller
     }
 
     /**
-     * Step 2: Pilih Jadwal Mentoring
+     * Step 2: Pilih Jadwal Mentoring (Dikelompokkan berdasarkan Sesi)
      */
-    public function step2()
+    public function step2(Request $request)
     {
         if (!session()->has('booking_step1')) {
             return redirect()->route('booking.step1');
         }
 
-        $schedules = Schedule::orderBy('schedule_date', 'asc')
-            ->orderBy('time_slot', 'asc')
-            ->get();
+        $user = Auth::user();
+        $sessions = MentoringSession::with(['schedules' => function ($query) {
+            $query->orderBy('schedule_date', 'asc')->orderBy('time_slot', 'asc');
+        }])->where('is_active', true)->get();
 
         $selectedScheduleId = session('booking_schedule_id');
+        $userBookedSessionIds = [];
+        $userBookedScheduleIds = [];
+        $conflictMap = [];
 
-        return view('booking.step2_pilih_jadwal', compact('schedules', 'selectedScheduleId'));
+        if ($user) {
+            $userBookings = $user->activeBookings()->with('schedule.mentoringSession')->get();
+            $userBookedScheduleIds = $userBookings->pluck('schedule_id')->toArray();
+            $userBookedSessionIds = $userBookings->pluck('schedule.mentoring_session_id')->filter()->unique()->toArray();
+
+            // Check collision for every schedule against user's active bookings
+            foreach ($sessions as $session) {
+                foreach ($session->schedules as $sched) {
+                    if (in_array($sched->id, $userBookedScheduleIds)) {
+                        continue;
+                    }
+                    $conflict = $user->findConflictingSchedule($sched);
+                    if ($conflict) {
+                        $conflictMap[$sched->id] = $conflict;
+                    }
+                }
+            }
+        }
+
+        return view('booking.step2_pilih_jadwal', compact('sessions', 'selectedScheduleId', 'userBookedSessionIds', 'userBookedScheduleIds', 'conflictMap'));
     }
 
     /**
-     * Process Step 2
+     * Process Step 2 with Business Validations
      */
     public function postStep2(Request $request)
     {
@@ -85,10 +159,28 @@ class BookingController extends Controller
             'schedule_id.required' => 'Silakan pilih salah satu jadwal mentoring yang tersedia.',
         ]);
 
-        $schedule = Schedule::findOrFail($validated['schedule_id']);
+        $user = Auth::user();
+        $schedule = Schedule::with('mentoringSession')->findOrFail($validated['schedule_id']);
 
+        // 1. Quota Check
         if ($schedule->remaining_slots <= 0) {
             return back()->with('error', 'Mohon maaf, kuota jadwal yang Anda pilih sudah penuh. Silakan pilih jadwal lain.');
+        }
+
+        // 2. Rule 1: Maksimal 1 jadwal per sesi
+        if ($user && $user->hasBookingForSession($schedule->mentoring_session_id)) {
+            $sessionTitle = $schedule->mentoringSession->title ?? 'Sesi ini';
+            return back()->with('error', "Kamu sudah terdaftar pada {$sessionTitle}. Setiap mahasiswa hanya boleh memilih 1 jadwal pada satu sesi.");
+        }
+
+        // 3. Rule 2: Bentrok jam dan tanggal dengan sesi lain yang sudah dipilih
+        if ($user) {
+            $conflict = $user->findConflictingSchedule($schedule);
+            if ($conflict) {
+                $conflictSessionTitle = $conflict->mentoringSession->title ?? 'Sesi Lain';
+                $conflictDate = \Carbon\Carbon::parse($conflict->schedule_date)->format('d M Y');
+                return back()->with('error', "Jadwal ini bentrok dengan {$conflictSessionTitle} yang sudah kamu booking pada tanggal {$conflictDate} ({$conflict->time_slot}). Mahasiswa tidak dapat memilih jadwal pada waktu yang bersamaan.");
+            }
         }
 
         session(['booking_schedule_id' => $schedule->id]);
@@ -110,7 +202,7 @@ class BookingController extends Controller
         }
 
         $studentData = session('booking_step1');
-        $schedule = Schedule::findOrFail(session('booking_schedule_id'));
+        $schedule = Schedule::with('mentoringSession')->findOrFail(session('booking_schedule_id'));
 
         return view('booking.step3_konfirmasi', compact('studentData', 'schedule'));
     }
@@ -125,22 +217,27 @@ class BookingController extends Controller
         }
 
         $user = Auth::user();
-
-        // Enforce 1 active booking rule
-        $existingBooking = Booking::where('user_id', $user->id)
-            ->whereIn('status', ['pending', 'accepted'])
-            ->first();
-
-        if ($existingBooking) {
-            return redirect()->route('status')->with('error', 'Anda sudah memiliki booking aktif yang sedang diproses atau diterima.');
-        }
-
         $studentData = session('booking_step1');
         $scheduleId = session('booking_schedule_id');
-        $schedule = Schedule::findOrFail($scheduleId);
+        $schedule = Schedule::with('mentoringSession')->findOrFail($scheduleId);
 
+        // 1. Quota Check
         if ($schedule->remaining_slots <= 0) {
             return redirect()->route('booking.step2')->with('error', 'Kuota jadwal baru saja habis. Silakan pilih jadwal lain.');
+        }
+
+        // 2. Rule 1: Enforce 1 schedule per session
+        if ($user->hasBookingForSession($schedule->mentoring_session_id)) {
+            $sessionTitle = $schedule->mentoringSession->title ?? 'Sesi ini';
+            return redirect()->route('sesi')->with('error', "Kamu sudah terdaftar pada {$sessionTitle}. Setiap mahasiswa hanya boleh memilih 1 jadwal pada satu sesi.");
+        }
+
+        // 3. Rule 2: Enforce no date/time collision with other booked sessions
+        $conflict = $user->findConflictingSchedule($schedule);
+        if ($conflict) {
+            $conflictSessionTitle = $conflict->mentoringSession->title ?? 'Sesi Lain';
+            $conflictDate = \Carbon\Carbon::parse($conflict->schedule_date)->format('d M Y');
+            return redirect()->route('booking.step2')->with('error', "Jadwal ini bentrok dengan {$conflictSessionTitle} yang sudah kamu booking pada tanggal {$conflictDate} ({$conflict->time_slot}).");
         }
 
         $booking = Booking::create([
@@ -171,13 +268,13 @@ class BookingController extends Controller
         $booking = null;
 
         if ($recentBookingId) {
-            $booking = Booking::with('schedule')->find($recentBookingId);
+            $booking = Booking::with(['schedule.mentoringSession', 'user'])->find($recentBookingId);
         }
 
         if (!$booking && Auth::check()) {
             $booking = Auth::user()->latestBooking;
             if ($booking) {
-                $booking->load('schedule');
+                $booking->load(['schedule.mentoringSession', 'user']);
             }
         }
 
@@ -189,25 +286,20 @@ class BookingController extends Controller
     }
 
     /**
-     * Status Booking & Daftar Mentoring
+     * Status Booking Sesi Mentoring Mahasiswa
      */
     public function status()
     {
         $user = Auth::user();
-        $userBooking = null;
+        $userBookings = collect();
 
         if ($user) {
-            $userBooking = Booking::with('schedule')
+            $userBookings = Booking::with('schedule.mentoringSession')
                 ->where('user_id', $user->id)
-                ->latest()
-                ->first();
+                ->orderBy('created_at', 'desc')
+                ->get();
         }
 
-        $acceptedBookings = Booking::with('schedule')
-            ->where('status', 'accepted')
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        return view('status', compact('userBooking', 'acceptedBookings'));
+        return view('status', compact('userBookings'));
     }
 }

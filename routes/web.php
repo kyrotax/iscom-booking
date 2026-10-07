@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BookingApprovalController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ScheduleController;
+use App\Http\Controllers\Admin\SessionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 // Public Pages
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sesi', [HomeController::class, 'sesi'])->name('sesi');
+Route::post('/sesi/pilih', [HomeController::class, 'pilihSesi'])->name('sesi.pilih');
+Route::get('/sesi/{mentoringSession}', [HomeController::class, 'showSesi'])->name('sesi.show');
 Route::get('/jadwal', [HomeController::class, 'jadwal'])->name('jadwal');
 Route::get('/status', [BookingController::class, 'status'])->name('status');
 
@@ -31,6 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/booking', function () {
         return redirect()->route('booking.step1');
     })->name('booking');
+
+    Route::post('/booking/mulai', [BookingController::class, 'mulaiBooking'])->name('booking.mulai');
 
     Route::get('/booking/data-diri', [BookingController::class, 'step1'])->name('booking.step1');
     Route::post('/booking/data-diri', [BookingController::class, 'postStep1'])->name('booking.step1.post');
@@ -52,12 +58,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Schedules Management
+    // Sessions Management (CRUD)
+    Route::resource('sessions', SessionController::class);
+
+    // Schedules Management (CRUD)
     Route::resource('schedules', ScheduleController::class);
 
-    // Bookings Approval Management
+    // Bookings Approval Management (Using POST method with hidden ID in payload)
     Route::get('/bookings', [BookingApprovalController::class, 'index'])->name('bookings.index');
-    Route::patch('/bookings/{booking}/accept', [BookingApprovalController::class, 'accept'])->name('bookings.accept');
-    Route::patch('/bookings/{booking}/reject', [BookingApprovalController::class, 'reject'])->name('bookings.reject');
-    Route::delete('/bookings/{booking}', [BookingApprovalController::class, 'destroy'])->name('bookings.destroy');
+    Route::post('/bookings/accept', [BookingApprovalController::class, 'accept'])->name('bookings.accept');
+    Route::post('/bookings/reject', [BookingApprovalController::class, 'reject'])->name('bookings.reject');
+    Route::post('/bookings/destroy', [BookingApprovalController::class, 'destroy'])->name('bookings.destroy');
+    // Fallback parameterized routes for backward compatibility
+    Route::patch('/bookings/{booking}/accept', [BookingApprovalController::class, 'accept']);
+    Route::patch('/bookings/{booking}/reject', [BookingApprovalController::class, 'reject']);
+    Route::delete('/bookings/{booking}', [BookingApprovalController::class, 'destroy']);
 });

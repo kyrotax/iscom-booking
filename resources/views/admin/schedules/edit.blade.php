@@ -32,6 +32,18 @@
     @method('PUT')
 
     <div class="form-grid-2">
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label class="form-label" for="mentoring_session_id">Sesi Mentoring</label>
+        <select name="mentoring_session_id" id="mentoring_session_id" class="form-control" required>
+          <option value="">-- Pilih Sesi Mentoring --</option>
+          @foreach($sessions as $sess)
+            <option value="{{ $sess->id }}" {{ old('mentoring_session_id', $schedule->mentoring_session_id) == $sess->id ? 'selected' : '' }}>
+              {{ $sess->title }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+
       <div class="form-group">
         <label class="form-label" for="day_name">Nama Hari</label>
         <select name="day_name" id="day_name" class="form-control" required>

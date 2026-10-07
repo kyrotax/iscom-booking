@@ -29,8 +29,12 @@ class Booking extends Model
         static::creating(function ($booking) {
             if (empty($booking->booking_code)) {
                 $year = date('Y');
-                $randomNum = rand(100, 999);
-                $booking->booking_code = "#ISCOM-{$year}-{$randomNum}";
+                do {
+                    $randomNum = rand(1000, 9999);
+                    $code = "#ISCOM-{$year}-{$randomNum}";
+                } while (static::where('booking_code', $code)->exists());
+
+                $booking->booking_code = $code;
             }
         });
     }
