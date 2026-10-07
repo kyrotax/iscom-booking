@@ -4,11 +4,7 @@
 <div class="container py-lg">
   <div class="card card-max-md" style="max-width: 440px;">
     <div class="card-header text-center">
-      <div class="brand-dots" style="justify-content: center; margin-bottom: 12px;">
-        <span class="dot-blue" style="width: 14px; height: 14px;"></span>
-        <span class="dot-orange" style="width: 14px; height: 14px;"></span>
-        <span class="dot-green" style="width: 12px; height: 12px;"></span>
-      </div>
+      <img src="{{ asset('images/iscom-logo.png') }}" alt="ISCOM" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto 12px auto; display: block;">
       <h1 class="font-headline-lg">Masuk ke ISCOM</h1>
       <p class="font-body-md" style="color: var(--on-surface-variant); margin-top: 4px;">
         Gunakan akun mahasiswa atau admin Anda.

@@ -276,9 +276,41 @@ img, svg {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-logo-img {
+  height: 38px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-badge-tag {
+  background: rgba(0, 102, 204, 0.08);
+  color: var(--primary);
+  font-size: 11px;
   font-weight: 700;
-  font-size: 18px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(0, 102, 204, 0.15);
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .brand-logo-img {
+    height: 32px;
+    max-width: 140px;
+  }
+  .brand-badge-tag {
+    display: none;
+  }
 }
 
 .brand-dots {

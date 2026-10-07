@@ -18,13 +18,8 @@
   <header class="site-header" style="background-color: #FFFFFF; border-bottom: 2px solid var(--primary-fixed);">
     <div class="container nav-wrapper">
       <div style="display: flex; align-items: center; gap: 24px;">
-        <a href="{{ route('admin.dashboard') }}" class="brand-logo">
-          <div class="brand-dots">
-            <span class="dot-blue"></span>
-            <span class="dot-orange"></span>
-            <span class="dot-green"></span>
-          </div>
-          <span class="brand-text-blue">ISCOM</span>
+        <a href="{{ route('admin.dashboard') }}" class="brand-logo" aria-label="ISCOM Admin">
+          <img src="{{ asset('images/iscom-logo.png') }}" alt="ISCOM Admin" class="brand-logo-img">
           <span class="admin-badge">ADMIN</span>
         </a>
 

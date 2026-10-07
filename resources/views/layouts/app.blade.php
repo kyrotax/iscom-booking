@@ -28,14 +28,8 @@
     <div class="container nav-wrapper">
       <div style="display: flex; align-items: center; gap: 32px;">
         <!-- Brand Logo -->
-        <a href="{{ route('home') }}" class="brand-logo">
-          <div class="brand-dots">
-            <span class="dot-blue"></span>
-            <span class="dot-orange"></span>
-            <span class="dot-green"></span>
-          </div>
-          <span class="brand-text-blue">ISCOM</span>
-          <span class="brand-text-dark">Mentoring</span>
+        <a href="{{ route('home') }}" class="brand-logo" aria-label="ISCOM">
+          <img src="{{ asset('images/iscom-logo.png') }}" alt="ISCOM" class="brand-logo-img">
         </a>
 
         <!-- Desktop Navigation Links -->
